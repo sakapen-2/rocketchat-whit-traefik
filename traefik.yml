@@ -1,0 +1,33 @@
+providers:
+  docker:
+    exposedByDefault: false
+    network: web
+api:
+  dashboard: true
+  insecure: false
+entryPoints:
+  web:
+    address: :80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: :443
+    http:
+      tls: {}
+log:
+  level: DEBUG
+accessLog:
+  bufferingSize: 200
+  filePath: /logs/access.log
+  format: json
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: test@gmail.com
+      storage: /traefik/acme.json
+      httpChallenge:
+        entryPoint: web
