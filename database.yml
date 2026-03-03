@@ -2,6 +2,8 @@ services:
   nats:
     image: docker.io/nats:${NATS_VERSION:-2.11-alpine}
     restart: always
+    networks:
+      - web
     expose:
       - 4222
       - 8222
@@ -22,6 +24,8 @@ services:
 
   nats-exporter:
     image: docker.io/natsio/prometheus-nats-exporter:${NATS_EXPORTER_VERSION:-0.17.3}
+    networks:
+      - web
     depends_on:
       - nats
     expose:
@@ -51,6 +55,8 @@ services:
   mongodb-init-container:
     image: docker.io/mongodb/mongodb-community-server:${MONGODB_VERSION:-8.2}-ubi8
     restart: on-failure
+    networks:
+      - web
     # depends_on:
     #   mongodb:
     #     condition: service_healthy
@@ -81,6 +87,8 @@ labels:
   mongodb:
     image: docker.io/mongodb/mongodb-community-server:${MONGODB_VERSION:-8.2}-ubi8
     restart: always
+    networks:
+      - web
     # depends_on:
     #   mongodb-fix-permission-container:
     #     condition: service_completed_successfully
@@ -129,6 +137,8 @@ labels:
 
   mongodb-exporter:
     image: docker.io/percona/mongodb_exporter:${MONGODB_EXPORTER_VERSION:-0.44.0}
+    networks:
+      - web
        depends_on:
          - mongodb
        expose:
@@ -141,3 +151,6 @@ labels:
 volumes:
   mongodb_data: {driver: local}
 
+networks:
+  web:
+    external: true
