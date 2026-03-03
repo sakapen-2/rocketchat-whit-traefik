@@ -1,0 +1,53 @@
+services:
+  rocketchat:
+    image: ${IMAGE:-registry.rocket.chat/rocketchat/rocket.chat}:${RELEASE:-8.1.1}
+    container_name: rocketchat
+    restart: always
+
+    networks:
+      - web
+
+    labels:
+
+      - "traefik.enable=true"
+      - "traefik.http.routers.rocketchat.rule=Host(`chat.test.sbs`)"
+      - "traefik.http.routers.rocketchat.entrypoints=websecure"
+      - "traefik.http.routers.rocketchat.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.rocketchat.tls=true"
+      - "traefik.http.services.rocketchat.loadbalancer.server.port=3000"
+      - "traefik.http.routers.rocketchat.service=rocketchat"
+    environment:
+      ROOT_URL: https://chat.test.sbs
+      PORT: 3000
+      DEPLOY_METHOD: docker
+      DEPLOY_PLATFORM: compose
+      REG_TOKEN: ${REG_TOKEN:-}
+      LICENSE_DEBUG: true
+      OVERWRITE_SETTING_Prometheus_Enabled: true
+      OVERWRITE_SETTING_Prometheus_Port: "${METRICS_PORT:-9458}"
+      MONGO_URL: ${MONGO_URL:-mongodb://mongodb:27017/rocketchat?replicaSet=rs0}
+      TRANSPORTER: "${NATS_URL-monolith+nats://nats:4222}"
+      INSTANCE_IP: "${INSTANCE_IP:-}"
+
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        echo "Waiting for MongoDB...";
+        for i in $(seq 1 60); do
+          if nc -z mongodb 27017 >/dev/null 2>&1; then
+            exec node main.js;
+          fi;
+          sleep 5;
+        done;
+        exit 1
+
+    expose:
+      - "3000"
+
+    logging:
+      driver: "json-file"
+
+networks:
+  web:
+    external: true
