@@ -7,7 +7,7 @@ chmod 600 letsencrypt/acme.json
 docker network create web
 
 docker compose -f database.yml    up -d 
+
 docker compose -f compose-rocket.yml   up -d 
 
 docker compose -f docker-compose.yml up -d 
-
