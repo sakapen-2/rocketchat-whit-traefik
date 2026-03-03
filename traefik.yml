@@ -28,6 +28,6 @@ certificatesResolvers:
   letsencrypt:
     acme:
       email: test@gmail.com
-      storage: /traefik/acme.json
+      storage: /letsencrypt/acme.json
       httpChallenge:
         entryPoint: web
